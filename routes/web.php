@@ -43,9 +43,6 @@ Route::get('/', function () {
     // $live = $iptv->liveLink($live);
     // dd($live);
 
-$r = Http::head("http://magm1giillmig.funtogether.xyz:8080/movie/SamirHadzic/VhPksdGYKs/111760.mkv?play_token=DOZFlno9kU");
-
-dd($r->body());
     $url = "http://brokentv.rip:8080/c";
     $mac = "00:1a:79:ae:4f:6a";
 
