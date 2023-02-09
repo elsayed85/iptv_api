@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-
 
 class Xtream
 {
@@ -14,15 +14,32 @@ class Xtream
     private $server_info;
     private $user_info;
 
-    public function setLoginData($username, $password, $portal)
+    /**
+     * Set login data
+     *
+     * @param string $username
+     * @param string $password
+     * @param string $portal
+     * @return Xtream
+     */
+
+    public function setLoginData(string $username, string $password, string $portal)
     {
         $this->username = $username;
         $this->password = $password;
         $this->portal = $portal;
+
         return $this;
     }
 
-    public function setLoginDataFromUrl($url, $port = null)
+    /**
+     * Set login data from url
+     *
+     * @param string $url
+     * @param string|null $port
+     * @return Xtream
+     */
+    public function setLoginDataFromUrl(string $url, string $port = null)
     {
         $url = parse_url($url);
         $query = $url['query'];
@@ -30,13 +47,21 @@ class Xtream
 
         $this->username = $query['username'];
         $this->password = $query['password'];
-        $port = $port ?? $url['port'];
+        $port = $port ?? $url['port'] ?? 80;
         $this->portal = $url['scheme'] . "://" . $url['host'] . ":" . $port;
 
         return $this;
     }
 
-    public function getRequest($data = [], $headers = [])
+    /**
+     * Build url
+     *
+     * @param array $data
+     * @param array $headers
+     * @param string $url
+     * @return Response
+     */
+    public function request(array $data = [], array $headers = [],  string $url = "player_api.php")
     {
         $data = array_merge([
             "username" => $this->username,
@@ -47,14 +72,19 @@ class Xtream
             'X-Requested-With' => 'XMLHttpRequest',
             'Referer' => $this->portal,
         ], $headers))
-            ->get($this->portal . "/player_api.php", $data);
+            ->get($this->portal . "/" . $url, $data);
 
         return $response;
     }
 
-    public function login()
+    /**
+     * Build url
+     *
+     * @return void
+     */
+    public function auth()
     {
-        $request = $this->getRequest();
+        $request = $this->request();
 
         if ($request->successful()) {
             $response = $request->json();
@@ -63,20 +93,57 @@ class Xtream
         }
     }
 
+    /**
+     * Get user info
+     *
+     * @return object
+     */
     public function user()
     {
         return (object) $this->user_info;
     }
 
+    /**
+     * Get server info
+     *
+     * @return object
+     */
     public function server()
     {
         return (object) $this->server_info;
     }
 
+    /**
+     * Get server info
+     *
+     * @param string|null $type
+     * @param integer $id
+     * @param string|null $ext
+     * @return string
+     */
+    public function link(string $type = null, int $id, string $ext = null)
+    {
+        $file = $id;
+        if ($ext)
+            $file .= ".$ext";
+
+        return $this->buildUrl([
+            $type,
+            $this->username,
+            $this->password,
+            $file,
+        ]);
+    }
+
     //////////////////// LIVE ////////////////////
+    /**
+     * Get live categories
+     *
+     * @return array
+     */
     public function liveCategories()
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_live_categories",
         ]);
 
@@ -86,10 +153,17 @@ class Xtream
         }
     }
 
-    public function lives()
+    /**
+     * Get live streams
+     *
+     * @param integer|null $category_id
+     * @return array
+     */
+    public function lives(int $category_id = null)
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_live_streams",
+            "category_id" => $category_id,
         ]);
 
         if ($request->successful()) {
@@ -98,23 +172,67 @@ class Xtream
         }
     }
 
-    public function live($id)
+    /**
+     * Get live epg
+     *
+     * @param integer $id
+     * @param string $action [get_short_epg, get_simple_data_table]
+     * @param integer $limit
+     * @return array
+     */
+    public function live(int $id, string $action = "get_short_epg", int $limit = 4)
     {
-        $request = $this->getRequest([
-            "action" => "get_short_epg",
+        $request = $this->request([
+            "action" => $action,
             "stream_id" => $id,
+            "limit" => $limit,
         ]);
 
         if ($request->successful()) {
             $response = $request->json();
+            return $response;
+        }
+    }
+
+    /**
+     * Get live link
+     *
+     * @param array $live
+     * @return string
+     */
+    public function liveLink(array $live)
+    {
+        return $this->link(null, $live['stream_id']);
+    }
+
+    /**
+     * Get live epg
+     *
+     * @return array
+     */
+    public function fullEpg()
+    {
+        $request = $this->request([], [], "xmltv.php");
+
+        if ($request->successful()) {
+            $xml_response = $request->body();
+            $xml = simplexml_load_string($xml_response);
+            $json = json_encode($xml);
+            $response = json_decode($json, TRUE)['channel'] ?? [];
             return $response;
         }
     }
 
     //////////////////// VOD ////////////////////
+
+    /**
+     * Get vod categories
+     *
+     * @return array
+     */
     public function vodCategories()
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_vod_categories",
         ]);
 
@@ -124,9 +242,15 @@ class Xtream
         }
     }
 
-    public function vods($category_id = null)
+    /**
+     * Get vod streams
+     *
+     * @param integer|null $category_id
+     * @return array
+     */
+    public function vods(int $category_id = null)
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_vod_streams",
             "category_id" => $category_id,
         ]);
@@ -137,9 +261,15 @@ class Xtream
         }
     }
 
-    public function vod($id)
+    /**
+     * Get vod info
+     *
+     * @param integer $id
+     * @return array
+     */
+    public function vod(int $id)
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_vod_info",
             "vod_id" => $id,
         ]);
@@ -150,10 +280,27 @@ class Xtream
         }
     }
 
+    /**
+     * Get vod link
+     *
+     * @param array $vod
+     * @return string
+     */
+    public function vodLink(array $vod)
+    {
+        return $this->link($vod['stream_type'], $vod['stream_id'], $vod['container_extension']);
+    }
+
     //////////////////// SERIES ////////////////////
+
+    /**
+     * Get series categories
+     *
+     * @return array
+     */
     public function seriesCategories()
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_series_categories",
         ]);
 
@@ -163,9 +310,15 @@ class Xtream
         }
     }
 
-    public function series($category_id = "*")
+    /**
+     * Get series
+     *
+     * @param string $category_id
+     * @return array
+     */
+    public function series(string $category_id = "*")
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_series",
             "category_id" => $category_id,
         ]);
@@ -176,9 +329,15 @@ class Xtream
         }
     }
 
-    public function serie($id)
+    /**
+     * Get serie info
+     *
+     * @param integer $id
+     * @return array
+     */
+    public function serie(int $id)
     {
-        $request = $this->getRequest([
+        $request = $this->request([
             "action" => "get_series_info",
             "series_id" => $id,
         ]);
@@ -187,5 +346,49 @@ class Xtream
             $response = $request->json();
             return $response;
         }
+    }
+
+    /**
+     * Get serie link
+     *
+     * @param array $serie
+     * @param integer $season_number
+     * @param integer $episode_number
+     * @return string
+     */
+    public function episodeLink(array $serie, int $season_number, int $episode_number)
+    {
+        $episodes = $serie['episodes'] ?? [];
+        if (empty($episodes)) return null;
+
+        $episode = collect($episodes)
+            ->flatten(1)
+            ->where('season', $season_number)
+            ->where('episode_num', $episode_number)
+            ->first();
+
+        if (empty($episode)) return null;
+
+        return $this->link("series", $episode['id'], $episode['container_extension']);
+    }
+
+
+    //////////////////// UTILS ////////////////////
+
+    /**
+     * Get link
+     *
+     * @param array $parts
+     * @return string
+     */
+    public function buildUrl(array $parts = [])
+    {
+        $url = $this->portal;
+        foreach ($parts as $part) {
+            if (is_null($part))
+                continue;
+            $url .= "/$part";
+        }
+        return $url;
     }
 }
