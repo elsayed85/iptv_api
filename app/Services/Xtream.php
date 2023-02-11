@@ -23,7 +23,7 @@ class Xtream
      * @return Xtream
      */
 
-    public function setLoginData(string $username, string $password, string $portal)
+    public function setLoginData(string $portal, string $username, string $password)
     {
         $this->username = $username;
         $this->password = $password;
@@ -90,7 +90,9 @@ class Xtream
             $response = $request->json();
             $this->server_info = $response['server_info'];
             $this->user_info = $response['user_info'];
+            return true;
         }
+        return false;
     }
 
     /**

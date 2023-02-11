@@ -1,0 +1,123 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Cairo;
+}
+
+.absolute-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    height: 100%;
+    width: 100%;
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+}
+
+.home-mast {
+    height: 100vh;
+}
+
+.home-mast__container {
+    display: flex;
+    height: 100%;
+    cursor: pointer;
+}
+
+.home-mast__container>* {
+    position: relative;
+    flex-grow: 1;
+    padding: 1em;
+    transition: flex-grow 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+}
+
+.home-mast__container>*:hover {
+    flex-grow: 3;
+    color: white !important;
+}
+
+.home-mast__container>*:nth-child(1):after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #00a19b;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+
+.home-mast__container>*:nth-child(1):hover:after {
+    opacity: 0.65;
+    transition-delay: 0.6s;
+}
+
+.home-mast__container>*:nth-child(2):after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #bb1654;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+
+.home-mast__container>*:nth-child(2):hover:after {
+    opacity: 0.65;
+    transition-delay: 0.6s;
+}
+
+.home-mast__container>*:nth-child(3):after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #006ba6;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+
+.home-mast__container>*:nth-child(3):hover:after {
+    opacity: 0.65;
+    transition-delay: 0.6s;
+}
+
+.home-mast__container>*:nth-child(4):after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #e6661f;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
+
+.home-mast__container>*:nth-child(4):hover:after {
+    opacity: 0.65;
+    transition-delay: 0.6s;
+}
+
+.absolute-bg {
+    color: #ffffffcc;
+    font-size: 82px;
+    text-align: center;
+    text-shadow: 7px 0px 17px black;
+    padding: 40% 0px;
+}
