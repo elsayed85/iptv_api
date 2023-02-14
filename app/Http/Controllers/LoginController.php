@@ -22,9 +22,10 @@ class LoginController extends Controller
         $iptv = (new Xtream())->setLoginData($portal, $username, $password);
 
         if ($iptv->auth()) {
-            $expire_at = $iptv->user()->exp_date;
+            $user = $iptv->user();
             $request->session()->put('iptv', true);
-            $request->session()->put("iptv_expire_at", $expire_at);
+            $request->session()->put("iptv_expire_at", $user->exp_date);
+            $request->session()->put("iptv_user", $user);
             $request->session()->put('iptv_data', [
                 'portal' => $portal,
                 'username' => $username,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LiveController;
 use App\Http\Controllers\LoginController;
@@ -58,7 +59,7 @@ use Illuminate\Support\Facades\Route;
 //     $vod = $iptv->loadVod($vods);
 //     dd($vod);
 // });
-
+Route::view('test', 'test');
 Route::group(['middleware' => 'iptv_guest'], function () {
     Route::get("login", [LoginController::class, "login"])->name('login.index');
     Route::post("login", [LoginController::class, "auth"])->name('login.auth');
@@ -67,9 +68,19 @@ Route::group(['middleware' => 'iptv_guest'], function () {
 Route::group(['middleware' => 'iptv_auth'], function () {
     Route::get("logout", [HomeController::class, "logout"])->name('logout');
     Route::get("/", [HomeController::class, "index"])->name('home');
-    Route::get("account", [HomeController::class, "account"])->name('account.show');
+
     Route::get("live", [LiveController::class, "index"])->name('live.index');
-    Route::get("radio", [RadioController::class, "index"])->name('radio.index');
+    Route::get("live/{live}", [LiveController::class, "show"])->name('live.show');
+    Route::get("live/{live}/load", [LiveController::class, "load"])->name('live.load');
+
     Route::get("movies", [MoviesController::class, "index"])->name('movies.index');
+    Route::get("movie/{movie}", [MoviesController::class, "show"])->name('movie.show');
+    Route::get("movie/{movie}/load", [MoviesController::class, "load"])->name('movie.load');
+
+
     Route::get("series", [SeriesController::class, "index"])->name('series.index');
+    Route::get("serie/{serie}", [SeriesController::class, "show"])->name('serie.show');
+    Route::get("serie/{serie}/load", [SeriesController::class, "load"])->name('serie.load');
+
+    Route::get("category/{type}/{category}", [CategoryController::class, "show"])->name('category.show');
 });

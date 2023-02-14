@@ -9,9 +9,9 @@
     <link href="https://fonts.googleapis.com/css?family=Cairo" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     @php
-        $portal = "http://limetv.me:80";
-        $username = "4627val";
-        $password = "608516";
+        $portal = 'http://cobraa.in:8000';
+        $username = '641177854432';
+        $password = 'dxFe0Y4JrH';
     @endphp
 </head>
 
@@ -27,7 +27,7 @@
                             <use xlink:href="#icon-user"></use>
                         </svg><span class="hidden">Portal</span></label>
                     <input autocomplete="portal" id="login__portal" type="text" name="portal" class="form__input"
-                        placeholder="Portal" required value="{{ old('portal' , $portal) }}">
+                        placeholder="Portal" required value="{{ old('portal', $portal) }}">
                     @error('portal')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
@@ -40,7 +40,7 @@
                             <use xlink:href="#icon-user"></use>
                         </svg><span class="hidden">Username</span></label>
                     <input autocomplete="username" id="login__username" type="text" name="username"
-                        class="form__input" placeholder="Username" required value="{{ old('username' , $username) }}">
+                        class="form__input" placeholder="Username" required value="{{ old('username', $username) }}">
                     @error('username')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class Xtream
@@ -80,7 +81,7 @@ class Xtream
     /**
      * Build url
      *
-     * @return void
+     * @return Xtream | false
      */
     public function auth()
     {
@@ -90,8 +91,9 @@ class Xtream
             $response = $request->json();
             $this->server_info = $response['server_info'];
             $this->user_info = $response['user_info'];
-            return true;
+            return $this;
         }
+
         return false;
     }
 
@@ -113,6 +115,11 @@ class Xtream
     public function server()
     {
         return (object) $this->server_info;
+    }
+
+    public function expireAt()
+    {
+        return $this->user_info['exp_date']  ??  session('iptv_expire_at');
     }
 
     /**
@@ -143,14 +150,19 @@ class Xtream
      *
      * @return array
      */
-    public function liveCategories()
+    public function liveCategories($useCache = true)
     {
+        if ($useCache && Cache::has('live_categories'))
+            return Cache::get('live_categories');
+
         $request = $this->request([
             "action" => "get_live_categories",
         ]);
 
         if ($request->successful()) {
             $response = $request->json();
+            if ($useCache)
+                Cache::put('live_categories', $response, $this->expireAt());
             return $response;
         }
     }
@@ -232,14 +244,18 @@ class Xtream
      *
      * @return array
      */
-    public function vodCategories()
+    public function moviesCategories($useCache = true)
     {
+        if ($useCache && Cache::has('vodCategories'))
+            return Cache::get('vodCategories');
         $request = $this->request([
             "action" => "get_vod_categories",
         ]);
 
         if ($request->successful()) {
             $response = $request->json();
+            if ($useCache)
+                Cache::put('vodCategories', $response, $this->expireAt());
             return $response;
         }
     }
@@ -250,7 +266,7 @@ class Xtream
      * @param integer|null $category_id
      * @return array
      */
-    public function vods(int $category_id = null)
+    public function movies(int $category_id = null)
     {
         $request = $this->request([
             "action" => "get_vod_streams",
@@ -269,7 +285,7 @@ class Xtream
      * @param integer $id
      * @return array
      */
-    public function vod(int $id)
+    public function movie(int $id)
     {
         $request = $this->request([
             "action" => "get_vod_info",
@@ -300,14 +316,18 @@ class Xtream
      *
      * @return array
      */
-    public function seriesCategories()
+    public function seriesCategories($useCache = true)
     {
+        if ($useCache && Cache::has('seriesCategories'))
+            return Cache::get('seriesCategories');
         $request = $this->request([
             "action" => "get_series_categories",
         ]);
 
         if ($request->successful()) {
             $response = $request->json();
+            if ($useCache)
+                Cache::put('seriesCategories', $response, $this->expireAt());
             return $response;
         }
     }
@@ -392,5 +412,39 @@ class Xtream
             $url .= "/$part";
         }
         return $url;
+    }
+
+    public function loadCategory($category_id, $type)
+    {
+        $data = [];
+        if ($type == 'live') {
+            $data = $this->lives($category_id);
+        } elseif ($type == 'movies') {
+            $data = $this->vods($category_id);
+        } elseif ($type == 'series') {
+            $data = $this->series($category_id);
+        }
+
+        return collect($data);
+    }
+
+    public function loadCategoryAndCache($category_id, $type)
+    {
+        if (Cache::has($type . $category_id))
+            return collect(Cache::get($type . $category_id));
+
+        $data = $this->loadCategory($category_id, $type);
+        Cache::put($type . $category_id, $data->toArray(), now()->addWeek());
+        return $data;
+    }
+
+    public function clearCache()
+    {
+        Cache::forget('liveCategories');
+        Cache::forget('vodCategories');
+        Cache::forget('seriesCategories');
+        Cache::forget('live*');
+        Cache::forget('movies*');
+        Cache::forget('series*');
     }
 }

@@ -1,0 +1,82 @@
+/* Typography
+--------------------------*/
+/* ------CustomCSS------ */
+.king-header {
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.15);
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.08);
+}/* ------body------ */
+body {
+background-color:#ffffff;	
+			
+}
+a, 
+.king-order-nav ul li .active, 
+.king-order-nav ul li a:hover {
+	color:#ea4c89;
+}
+.king-order-nav ul li .active:after, 
+.king-order-nav ul li a:hover:after {
+	border-color: #ea4c89;
+}
+.king-categories-head a {
+	color: #ea4c89;
+}
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"],
+.king-alert-button {
+	background-color:#ea4c89;
+	border-color:#ea4c89;	color:#fcfcfc;}
+.user-follow-button a {
+	background-color:#ea4c89;
+}
+.user-follow-button .sl-count, .user-follow-button i {
+	color:#ffffff;
+}
+/* ------header------ */
+.king-cat-list li a {
+	color:#6e6d7a;
+}
+.king-head-nav a, .king-cat-dots, .search-close, .king-head-nav .king-head-nav-a {
+	color:#6e6d7a;
+}
+.king-submit-open, .king-submit-drop {
+	background-color:#9e9ea7;
+}
+.king-submit-drop:before{
+	border-bottom-color:#9e9ea7;
+}
+.king-submit.open .king-submit-open {
+	box-shadow: 0px 0px 2px 5px #9e9ea750;
+}
+.header-nav a {
+	color:#6e6d7a;	
+}
+.king-switch .btn-default label {
+	color:#6e6d7a;	
+}
+.header-nav .current-menu-item:before {
+	background-color: #ea4c89;
+}
+.header-nav .current-menu-item a {
+	color: #ea4c89;
+}
+.header-nav a:after {
+	background-color: #ea4c89;
+}
+.header-nav a:hover {
+	color: #ea4c89;
+}
+.page-top-header {
+	background-color:#0b0b0b;	
+	color:#333333;	
+}
+.king-login-buttons a {
+	background-color:#9e9ea7;
+}
+/* ------footer------ */
+/* ------sidebar------ */
+/* ------PostPage------ */
+/* ------KingflixPage------ */
+
