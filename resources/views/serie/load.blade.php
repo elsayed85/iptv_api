@@ -12,7 +12,8 @@
         var playerInstance = jwplayer("player").setup({
             controls: true,
             sharing: true,
-            // autostart: true,
+            autostart: false,
+            mute : false,
             allowFullscreen: true,
             displaytitle: true,
             displaydescription: true,
@@ -34,23 +35,36 @@
 
 
             "playlist": [
-                @foreach($seasons as $season => $episodes)
-                {
-                    "title": "{{ $serie['name'] }} S{{ $season }}",
-                    "description": "{{ $serie['genre'] }}",
-                    "image": "{{ $serie['cover'] }}",
-                    "sources": [
-                        @foreach ($episodes as $episode)
-                            {
-                                "file": "{!! iptv()->link("series" , $episode['id'] , $episode['container_extension']) !!}",
-                                "label": "{{ $episode['title'] }}",
+                @foreach ($seasons as $season => $episodes)
+                    @foreach ($episodes as $ep_index => $episode)
+                        {
+                            "title": "{{ $episode['title'] }}",
+                            "description": "{{ $serie['genre'] }}",
+                            "image": "{{ $serie['cover'] }}",
+                            "sources": [{
+                                "file": "{!! iptv()->link('series', $episode['id'], $episode['container_extension']) !!}",
+                                "label": "{{ $episode['title'] }}"
+                                @if(is_null($episode['container_extension']) || $episode['container_extension'] == 'mkv')
+                                ,
                                 "type": "mp4"
-                            },
-                        @endforeach
-                    ]
-                },
+                                @endif
+                            }]
+                            @if($subs_enabled)
+                            ,
+                            "tracks": [
+                                @foreach ($episode['subs'] as $subtitle)
+                                    {
+                                        "file": "{{ $subtitle }}",
+                                        "label": "Arabic",
+                                        "kind": "captions"
+                                    },
+                                @endforeach
+                            ]
+                            @endif
+                        },
+                    @endforeach
                 @endforeach
-        ]
+            ]
 
         });
 

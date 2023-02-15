@@ -67,7 +67,7 @@ Route::group(['middleware' => 'iptv_guest'], function () {
 
 Route::group(['middleware' => 'iptv_auth'], function () {
     Route::get("logout", [HomeController::class, "logout"])->name('logout');
-    Route::get("/", [HomeController::class, "index"])->name('home');
+    Route::get("/", [MoviesController::class, "index"])->name('home');
 
     Route::get("live", [LiveController::class, "index"])->name('live.index');
     Route::get("live/{live}", [LiveController::class, "show"])->name('live.show');

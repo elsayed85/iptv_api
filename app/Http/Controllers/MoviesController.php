@@ -36,6 +36,16 @@ class MoviesController extends Controller
             return $item;
         });
 
+        
+        $tmdb_id = $movie['tmdb_id'];
+        $subs_enabled = session('subs_enabled', false);
+        if ($subs_enabled) {
+            $subs = $this->getSubs($movie, $tmdb_id);
+        } else {
+            $subs = [];
+        }
+
+
         $stream = [
             "url" => iptv()->link("movie", $id, $movie['container_extension'] ?? null),
             "quality" => "Main"
@@ -43,8 +53,32 @@ class MoviesController extends Controller
 
         return view('movie.load', [
             'movie' => $movie,
-            'streams' => [$stream]
+            'streams' => [$stream],
+            'subs' => $subs,
         ]);
+    }
+
+    public function getSubs($movie, $tmdb_id)
+    {
+        if ($tmdb_id) {
+            $tmdb_movie = tmdb_Movie($tmdb_id);
+            $imdb = $tmdb_movie['imdb_id'];
+            $subs = subs_movie($imdb);
+        } else {
+            $name = $movie['name'];
+            $year = preg_match('/\((\d{4})\)/', $name, $matches) ? $matches[1] : null;
+            $name = preg_replace('/\s*\([^)]*\)/', '', $name);
+
+            $tmdb_search = tmdb_Movie_search($name, $year)['results'][0] ?? null;
+
+            $subs = [];
+            if ($tmdb_search) {
+                $tmdb_movie = tmdb_Movie($tmdb_search['id']);
+                $imdb = $tmdb_movie['imdb_id'];
+                $subs = subs_movie($imdb);
+            }
+        }
+        return $subs;
     }
 
     public function show($id)

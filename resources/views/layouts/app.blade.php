@@ -269,6 +269,7 @@
     <script type='text/javascript' src='{{ asset('king/js/jquery.min.js') }}' id='jquery-core-js'></script>
     <script type='text/javascript' src='{{ asset('king/js/jquery-migrate.min.js') }} }}' id='jquery-migrate-js'></script>
     <link rel="stylesheet" href="{{ asset('css/player.css') }}">
+    @livewireStyles
 </head>
 
 <body class="home blog">
@@ -343,14 +344,16 @@
                     </div>
                     <div class="king-form-group">
                         <label for="expire_at">Expire At</label>
-                        <input type="date" name="expire_at" id="expire_at" class="bpinput" disabled
-                            value="{{ expireAt()->format('Y-m-d') }}" />
+                        <input type="text" name="expire_at" id="expire_at" class="bpinput" disabled
+                            value="{{ expireAt() }}" />
                     </div>
                     <div class="king-form-group">
                         <label for="max_connections">Connections</label>
                         <input type="text" name="max_connections" id="max_connections" class="bpinput" disabled
                             value="{{ iptv_user()->active_cons }} Active of {{ iptv_user()->max_connections }}" />
                     </div>
+
+                    @livewire("subs-enable-toggle")
 
                     <div class="king-form-group bwrap">
                         <input type="button" class="king-submit-button" value="logout" id="king-submitbutton"
@@ -362,6 +365,7 @@
         </form>
     </div>
     </div><!-- .king-modal-login -->
+    @livewireScripts
 </body>
 
 </html>

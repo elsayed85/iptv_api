@@ -15,22 +15,35 @@ class LoginController extends Controller
 
     public function auth(Request $request)
     {
-        $portal = $request->input('portal');
-        $username = $request->input('username');
-        $password = $request->input('password');
+        $portal = request('portal');
+        $username = request('username');
+        $password = request('password');
+        $url = request('url');
 
-        $iptv = (new Xtream())->setLoginData($portal, $username, $password);
+        if ($url) {
+            $iptv = iptv()->setLoginDataFromUrl($url);
+            $username = $iptv->username;
+            $password = $iptv->password;
+            $portal = $iptv->portal;
+        } else {
+            $iptv = iptv()->setLoginData($portal, $username, $password);
+        }
+
 
         if ($iptv->auth()) {
             $user = $iptv->user();
-            $request->session()->put('iptv', true);
-            $request->session()->put("iptv_expire_at", $user->exp_date);
-            $request->session()->put("iptv_user", $user);
-            $request->session()->put('iptv_data', [
+            session()->put('iptv', true);
+            session()->put("iptv_expire_at", $user->exp_date);
+            session()->put("iptv_user", $user);
+            $data = [
                 'portal' => $portal,
                 'username' => $username,
                 'password' => $password,
-            ]);
+            ];
+            session()->put('iptv_data', $data);
+            $previousUsers = session()->get('iptv_users', []);
+            $previousUsers[] = $data;
+            session()->put('iptv_users', $previousUsers);
             return redirect()->route('home');
         } else {
             return redirect()->route('login.index')->with('error', 'Login failed');

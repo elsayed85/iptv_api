@@ -18,7 +18,7 @@
                 <article id="post-75"
                     class="post-75 post type-post status-publish format-image has-post-thumbnail hentry category-web-design tag-design tag-template tag-theme tag-web post_format-post-format-image">
 
-                    <a href="{{ route('movie.show', $movie['stream_id']) }}" class="entry-image-link">
+                    <a href="{{ route('movie.load', $movie['stream_id']) }}" class="entry-image-link king-share-link">
                         <div class="entry-image" style="height:480px;">
                             <div class="king-box-bg" data-king-img-src="{{ $movie['stream_icon'] }}">
                             </div>

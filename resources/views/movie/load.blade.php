@@ -48,6 +48,15 @@
                             "type": "mp4"
                         },
                     @endforeach
+                ],
+                "tracks": [
+                    @foreach ($subs as $subtitle)
+                        {
+                            "file": "{{ $subtitle }}",
+                            "label": "Arabic",
+                            "kind": "captions"
+                        },
+                    @endforeach
                 ]
             }]
 

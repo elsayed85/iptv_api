@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Http;
 
 class Xtream
 {
-    private $username;
-    private $password;
-    private $portal;
+    public $username;
+    public $password;
+    public $portal;
 
     private $server_info;
     private $user_info;
@@ -89,12 +89,20 @@ class Xtream
 
         if ($request->successful()) {
             $response = $request->json();
-            $this->server_info = $response['server_info'];
-            $this->user_info = $response['user_info'];
+            $this->server_info = $response['server_info'] ?? [];
+            $this->user_info = $response['user_info'] ?? [];
+            if ($this->user_info['auth'] == 0) {
+                return false;
+            }
             return $this;
         }
 
         return false;
+    }
+
+    public function cacheKey()
+    {
+        return "{$this->portal}_{$this->username}_";
     }
 
     /**
@@ -152,8 +160,8 @@ class Xtream
      */
     public function liveCategories($useCache = true)
     {
-        if ($useCache && Cache::has('live_categories'))
-            return Cache::get('live_categories');
+        if ($useCache && Cache::has($this->cacheKey() . 'liveCategories'))
+            return Cache::get($this->cacheKey() . 'liveCategories');
 
         $request = $this->request([
             "action" => "get_live_categories",
@@ -162,7 +170,7 @@ class Xtream
         if ($request->successful()) {
             $response = $request->json();
             if ($useCache)
-                Cache::put('live_categories', $response, $this->expireAt());
+                Cache::put($this->cacheKey() . 'liveCategories', $response, $this->expireAt());
             return $response;
         }
     }
@@ -173,8 +181,10 @@ class Xtream
      * @param integer|null $category_id
      * @return array
      */
-    public function lives(int $category_id = null)
+    public function lives(int $category_id = null, $useCache = true)
     {
+        if ($useCache && Cache::has($this->cacheKey() . 'lives'))
+            return Cache::get($this->cacheKey() . 'lives');
         $request = $this->request([
             "action" => "get_live_streams",
             "category_id" => $category_id,
@@ -182,6 +192,8 @@ class Xtream
 
         if ($request->successful()) {
             $response = $request->json();
+            if ($useCache)
+                Cache::put($this->cacheKey() . 'lives', $response, now()->addHours(2));
             return $response;
         }
     }
@@ -246,8 +258,8 @@ class Xtream
      */
     public function moviesCategories($useCache = true)
     {
-        if ($useCache && Cache::has('vodCategories'))
-            return Cache::get('vodCategories');
+        if ($useCache && Cache::has($this->cacheKey() . 'moviesCategories'))
+            return Cache::get($this->cacheKey() . 'moviesCategories');
         $request = $this->request([
             "action" => "get_vod_categories",
         ]);
@@ -255,7 +267,7 @@ class Xtream
         if ($request->successful()) {
             $response = $request->json();
             if ($useCache)
-                Cache::put('vodCategories', $response, $this->expireAt());
+                Cache::put($this->cacheKey() . 'moviesCategories', $response, $this->expireAt());
             return $response;
         }
     }
@@ -266,8 +278,10 @@ class Xtream
      * @param integer|null $category_id
      * @return array
      */
-    public function movies(int $category_id = null)
+    public function movies(int $category_id = null, $useCache = true)
     {
+        if ($useCache && Cache::has($this->cacheKey() . 'movies'))
+            return Cache::get($this->cacheKey() . 'movies');
         $request = $this->request([
             "action" => "get_vod_streams",
             "category_id" => $category_id,
@@ -275,6 +289,8 @@ class Xtream
 
         if ($request->successful()) {
             $response = $request->json();
+            if ($useCache)
+                Cache::put($this->cacheKey() . 'movies', $response, now()->addHours(2));
             return $response;
         }
     }
@@ -318,8 +334,8 @@ class Xtream
      */
     public function seriesCategories($useCache = true)
     {
-        if ($useCache && Cache::has('seriesCategories'))
-            return Cache::get('seriesCategories');
+        if ($useCache && Cache::has($this->cacheKey() . 'seriesCategories'))
+            return Cache::get($this->cacheKey() . 'seriesCategories');
         $request = $this->request([
             "action" => "get_series_categories",
         ]);
@@ -327,7 +343,7 @@ class Xtream
         if ($request->successful()) {
             $response = $request->json();
             if ($useCache)
-                Cache::put('seriesCategories', $response, $this->expireAt());
+                Cache::put($this->cacheKey() . 'seriesCategories', $response, $this->expireAt());
             return $response;
         }
     }
@@ -338,8 +354,10 @@ class Xtream
      * @param string $category_id
      * @return array
      */
-    public function series(string $category_id = "*")
+    public function series(string $category_id = "*", $useCache = true)
     {
+        if ($useCache && Cache::has($this->cacheKey() . 'series'))
+            return Cache::get($this->cacheKey() . 'series');
         $request = $this->request([
             "action" => "get_series",
             "category_id" => $category_id,
@@ -347,6 +365,8 @@ class Xtream
 
         if ($request->successful()) {
             $response = $request->json();
+            if ($useCache)
+                Cache::put($this->cacheKey() . 'series', $response, now()->addHours(2));
             return $response;
         }
     }
@@ -430,21 +450,24 @@ class Xtream
 
     public function loadCategoryAndCache($category_id, $type)
     {
-        if (Cache::has($type . $category_id))
-            return collect(Cache::get($type . $category_id));
+        if (Cache::has($this->cacheKey() . $type . $category_id))
+            return collect(Cache::get($this->cacheKey() . $type . $category_id));
 
         $data = $this->loadCategory($category_id, $type);
-        Cache::put($type . $category_id, $data->toArray(), now()->addWeek());
+        Cache::put($this->cacheKey() .  $type . $category_id, $data->toArray(), now()->addWeek());
         return $data;
     }
 
     public function clearCache()
     {
-        Cache::forget('liveCategories');
-        Cache::forget('vodCategories');
-        Cache::forget('seriesCategories');
-        Cache::forget('live*');
-        Cache::forget('movies*');
-        Cache::forget('series*');
+        Cache::forget($this->cacheKey() . 'moviesCategories');
+        Cache::forget($this->cacheKey() . 'seriesCategories');
+        Cache::forget($this->cacheKey() . 'liveCategories');
+        Cache::forget($this->cacheKey() . 'live.*');
+        Cache::forget($this->cacheKey() . 'movies.*');
+        Cache::forget($this->cacheKey() . 'series.*');
+        Cache::forget($this->cacheKey() . 'movies');
+        Cache::forget($this->cacheKey() . 'series');
+        Cache::forget($this->cacheKey() . 'lives');
     }
 }
